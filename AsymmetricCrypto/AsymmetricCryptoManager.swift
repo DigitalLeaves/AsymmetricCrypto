@@ -15,10 +15,10 @@ private let _singletonInstance = AsymmetricCryptoManager()
 private let kAsymmetricCryptoManagerApplicationTag = "com.AsymmetricCrypto.keypair"
 private let kAsymmetricCryptoManagerKeyType = kSecAttrKeyTypeRSA
 private let kAsymmetricCryptoManagerKeySize = 2048
-private let kPasswordLessManagerCypheredBufferSize = 1024
+private let kAsymmetricCryptoManagerCypheredBufferSize = 1024
 private let kAsymmetricCryptoManagerSecPadding: SecPadding = .PKCS1
 
-enum PasswordLessException: ErrorType {
+enum AsymmetricCryptoException: ErrorType {
     case UnknownError
     case DuplicateFoundWhileTryingToCreateKey
     case KeyNotFound
@@ -43,7 +43,7 @@ class AsymmetricCryptoManager: NSObject {
     
     // MARK: - Manage keys
     
-    func createSecureKeyPair(completion: ((success: Bool, error: PasswordLessException?) -> Void)? = nil) {
+    func createSecureKeyPair(completion: ((success: Bool, error: AsymmetricCryptoException?) -> Void)? = nil) {
         // access control for the private key
         let flags: SecAccessControlCreateFlags = [SecAccessControlCreateFlags.TouchIDAny, SecAccessControlCreateFlags.PrivateKeyUsage]
         guard let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, flags, nil) else {
@@ -80,7 +80,7 @@ class AsymmetricCryptoManager: NSObject {
             if status == errSecSuccess {
                 dispatch_async(dispatch_get_main_queue(), { completion?(success: true, error: nil) })
             } else {
-                var error = PasswordLessException.UnknownError
+                var error = AsymmetricCryptoException.UnknownError
                 switch (status) {
                 case errSecDuplicateItem: error = .DuplicateFoundWhileTryingToCreateKey
                 case errSecItemNotFound: error = .KeyNotFound
@@ -150,7 +150,7 @@ class AsymmetricCryptoManager: NSObject {
     
     // MARK: - Cypher and decypher methods
     
-    func encryptMessageWithPublicKey(message: String, completion: (success: Bool, data: NSData?, error: PasswordLessException?) -> Void) {
+    func encryptMessageWithPublicKey(message: String, completion: (success: Bool, data: NSData?, error: AsymmetricCryptoException?) -> Void) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
             
             if let publicKeyRef = self.getPublicKeyReference() {
@@ -182,7 +182,7 @@ class AsymmetricCryptoManager: NSObject {
         }
     }
     
-    func decryptMessageWithPrivateKey(encryptedData: NSData, completion: (success: Bool, result: String?, error: PasswordLessException?) -> Void) {
+    func decryptMessageWithPrivateKey(encryptedData: NSData, completion: (success: Bool, result: String?, error: AsymmetricCryptoException?) -> Void) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
             
             if let privateKeyRef = self.getPrivateKeyReference() {
@@ -191,7 +191,7 @@ class AsymmetricCryptoManager: NSObject {
                 let encryptedTextLen = encryptedData.length
                 
                 // prepare output data buffer
-                guard let plainData = NSMutableData(length: kPasswordLessManagerCypheredBufferSize) else {
+                guard let plainData = NSMutableData(length: kAsymmetricCryptoManagerCypheredBufferSize) else {
                     completion(success: false, result: nil, error: .OutOfMemory)
                     return
                 }
@@ -219,9 +219,9 @@ class AsymmetricCryptoManager: NSObject {
     
     // MARK: - Sign and verify signature.
     
-    func signMessageWithPrivateKey(message: String, completion: (success: Bool, data: NSData?, error: PasswordLessException?) -> Void) {
+    func signMessageWithPrivateKey(message: String, completion: (success: Bool, data: NSData?, error: AsymmetricCryptoException?) -> Void) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
-            var error: PasswordLessException? = nil
+            var error: AsymmetricCryptoException? = nil
             
             if let privateKeyRef = self.getPrivateKeyReference() {
                 // result data
@@ -261,9 +261,9 @@ class AsymmetricCryptoManager: NSObject {
         }
     }
     
-    func verifySignaturePublicKey(data: NSData, signatureData: NSData, completion: (success: Bool, error: PasswordLessException?) -> Void) {
+    func verifySignaturePublicKey(data: NSData, signatureData: NSData, completion: (success: Bool, error: AsymmetricCryptoException?) -> Void) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
-            var error: PasswordLessException? = nil
+            var error: AsymmetricCryptoException? = nil
 
             if let publicKeyRef = self.getPublicKeyReference() {
                 // hash data
