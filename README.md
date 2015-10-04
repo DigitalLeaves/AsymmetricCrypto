@@ -7,6 +7,18 @@ AsymmetricCryptoManager is a Swift implementation of an asymmetric cryptography 
 
 AsymmetricCryptoManager follows the Singleton pattern, thus it must be accessed by means of the sharedInstance variable.
 
+### Generating a key pair
+
+```swift
+AsymmetricCryptoManager.sharedInstance.createSecureKeyPair({ (success, error) -> Void in
+  if success {
+    // start using the key pair.
+  } else { 
+    // handle the error
+  }
+})
+```
+
 ### Encryption: 
 
 ```swift
