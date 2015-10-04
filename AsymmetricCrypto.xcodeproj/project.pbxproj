@@ -12,6 +12,8 @@
 		66D487131BC114CA009F2E52 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 66D487111BC114CA009F2E52 /* Main.storyboard */; };
 		66D487151BC114CB009F2E52 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 66D487141BC114CB009F2E52 /* Assets.xcassets */; };
 		66D487181BC114CB009F2E52 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 66D487161BC114CB009F2E52 /* LaunchScreen.storyboard */; };
+		66D487201BC11518009F2E52 /* AsymmetricCryptoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D4871F1BC11518009F2E52 /* AsymmetricCryptoManager.swift */; settings = {ASSET_TAGS = (); }; };
+		66D487251BC12828009F2E52 /* UIViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D487241BC12828009F2E52 /* UIViewController+Alerts.swift */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +24,9 @@
 		66D487141BC114CB009F2E52 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		66D487171BC114CB009F2E52 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		66D487191BC114CB009F2E52 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		66D4871F1BC11518009F2E52 /* AsymmetricCryptoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsymmetricCryptoManager.swift; sourceTree = "<group>"; };
+		66D487211BC121A0009F2E52 /* AsymmetricCrypto-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AsymmetricCrypto-Bridging-Header.h"; sourceTree = "<group>"; };
+		66D487241BC12828009F2E52 /* UIViewController+Alerts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+Alerts.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,11 +60,14 @@
 			isa = PBXGroup;
 			children = (
 				66D4870D1BC114CA009F2E52 /* AppDelegate.swift */,
+				66D487241BC12828009F2E52 /* UIViewController+Alerts.swift */,
 				66D4870F1BC114CA009F2E52 /* ViewController.swift */,
 				66D487111BC114CA009F2E52 /* Main.storyboard */,
 				66D487141BC114CB009F2E52 /* Assets.xcassets */,
 				66D487161BC114CB009F2E52 /* LaunchScreen.storyboard */,
 				66D487191BC114CB009F2E52 /* Info.plist */,
+				66D4871F1BC11518009F2E52 /* AsymmetricCryptoManager.swift */,
+				66D487211BC121A0009F2E52 /* AsymmetricCrypto-Bridging-Header.h */,
 			);
 			path = AsymmetricCrypto;
 			sourceTree = "<group>";
@@ -90,6 +98,7 @@
 		66D487021BC114CA009F2E52 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Ignacio Nieto Carvajal";
 				TargetAttributes = {
@@ -136,6 +145,8 @@
 			files = (
 				66D487101BC114CA009F2E52 /* ViewController.swift in Sources */,
 				66D4870E1BC114CA009F2E52 /* AppDelegate.swift in Sources */,
+				66D487201BC11518009F2E52 /* AsymmetricCryptoManager.swift in Sources */,
+				66D487251BC12828009F2E52 /* UIViewController+Alerts.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -246,10 +257,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = AsymmetricCrypto/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Ignacio-Nieto-Carvajal.AsymmetricCrypto";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "AsymmetricCrypto/AsymmetricCrypto-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
@@ -257,10 +271,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = AsymmetricCrypto/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Ignacio-Nieto-Carvajal.AsymmetricCrypto";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "AsymmetricCrypto/AsymmetricCrypto-Bridging-Header.h";
 			};
 			name = Release;
 		};
