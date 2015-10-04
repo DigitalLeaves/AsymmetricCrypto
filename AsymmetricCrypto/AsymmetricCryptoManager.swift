@@ -44,16 +44,8 @@ class AsymmetricCryptoManager: NSObject {
     // MARK: - Manage keys
     
     func createSecureKeyPair(completion: ((success: Bool, error: AsymmetricCryptoException?) -> Void)? = nil) {
-        // access control for the private key
-        let flags: SecAccessControlCreateFlags = [SecAccessControlCreateFlags.TouchIDAny, SecAccessControlCreateFlags.PrivateKeyUsage]
-        guard let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, flags, nil) else {
-            completion?(success: false, error: .UnableToGenerateAccessControlWithGivenSecurity)
-            return
-        }
-        
         // private key parameters
         let privateKeyParams: [String: AnyObject] = [
-            kSecAttrAccessControl as String: accessControl,
             kSecAttrIsPermanent as String: true,
             kSecAttrApplicationTag as String: kAsymmetricCryptoManagerApplicationTag
         ]
