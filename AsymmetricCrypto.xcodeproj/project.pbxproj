@@ -12,11 +12,12 @@
 		66D487131BC114CA009F2E52 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 66D487111BC114CA009F2E52 /* Main.storyboard */; };
 		66D487151BC114CB009F2E52 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 66D487141BC114CB009F2E52 /* Assets.xcassets */; };
 		66D487181BC114CB009F2E52 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 66D487161BC114CB009F2E52 /* LaunchScreen.storyboard */; };
-		66D487201BC11518009F2E52 /* AsymmetricCryptoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D4871F1BC11518009F2E52 /* AsymmetricCryptoManager.swift */; settings = {ASSET_TAGS = (); }; };
-		66D487251BC12828009F2E52 /* UIViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D487241BC12828009F2E52 /* UIViewController+Alerts.swift */; settings = {ASSET_TAGS = (); }; };
+		66D487201BC11518009F2E52 /* AsymmetricCryptoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D4871F1BC11518009F2E52 /* AsymmetricCryptoManager.swift */; };
+		66D487251BC12828009F2E52 /* UIViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D487241BC12828009F2E52 /* UIViewController+Alerts.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		661EE2F11DAA9D6500A8BEFB /* AsymmetricCrypto.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AsymmetricCrypto.entitlements; sourceTree = "<group>"; };
 		66D4870A1BC114CA009F2E52 /* AsymmetricCrypto.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AsymmetricCrypto.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		66D4870D1BC114CA009F2E52 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		66D4870F1BC114CA009F2E52 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -59,6 +60,7 @@
 		66D4870C1BC114CA009F2E52 /* AsymmetricCrypto */ = {
 			isa = PBXGroup;
 			children = (
+				661EE2F11DAA9D6500A8BEFB /* AsymmetricCrypto.entitlements */,
 				66D4870D1BC114CA009F2E52 /* AppDelegate.swift */,
 				66D487241BC12828009F2E52 /* UIViewController+Alerts.swift */,
 				66D4870F1BC114CA009F2E52 /* ViewController.swift */,
@@ -99,11 +101,18 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0700;
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "Ignacio Nieto Carvajal";
 				TargetAttributes = {
 					66D487091BC114CA009F2E52 = {
 						CreatedOnToolsVersion = 7.0.1;
+						DevelopmentTeam = 97P9DZHP78;
+						LastSwiftMigration = 0800;
+						SystemCapabilities = {
+							com.apple.Keychain = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -185,8 +194,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -229,8 +240,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -249,6 +262,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -258,12 +272,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = AsymmetricCrypto/AsymmetricCrypto.entitlements;
+				DEVELOPMENT_TEAM = 97P9DZHP78;
 				INFOPLIST_FILE = AsymmetricCrypto/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Ignacio-Nieto-Carvajal.AsymmetricCrypto";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "AsymmetricCrypto/AsymmetricCrypto-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -272,11 +289,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = AsymmetricCrypto/AsymmetricCrypto.entitlements;
+				DEVELOPMENT_TEAM = 97P9DZHP78;
 				INFOPLIST_FILE = AsymmetricCrypto/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Ignacio-Nieto-Carvajal.AsymmetricCrypto";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "AsymmetricCrypto/AsymmetricCrypto-Bridging-Header.h";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -299,6 +319,7 @@
 				66D4871E1BC114CB009F2E52 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

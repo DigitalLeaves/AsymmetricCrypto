@@ -25,15 +25,15 @@ class ViewController: UIViewController {
         didSet {
             if keyPairExists {
                 keyPairLabel.text = "A valid keypair is present"
-                keyPairButton.setTitle("Delete keypair", forState: .Normal)
+                keyPairButton.setTitle("Delete keypair", for: UIControlState())
             } else {
                 keyPairLabel.text = "No key pair present"
-                keyPairButton.setTitle("Generate keypair", forState: .Normal)
+                keyPairButton.setTitle("Generate keypair", for: UIControlState())
             }
-            signButton.enabled = keyPairExists
-            cypherButton.enabled = keyPairExists
-            verifySignatureButton.enabled = keyPairExists
-            decypherButton.enabled = keyPairExists
+            signButton.isEnabled = keyPairExists
+            cypherButton.isEnabled = keyPairExists
+            verifySignatureButton.isEnabled = keyPairExists
+            decypherButton.isEnabled = keyPairExists
         }
     }
     
@@ -47,21 +47,21 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.keyPairExists = AsymmetricCryptoManager.sharedInstance.keyPairExists()
     }
 
     // MARK: - button actions
-    @IBAction func generateKeyPair(sender: AnyObject) {
-        self.view.userInteractionEnabled = false
+    @IBAction func generateKeyPair(_ sender: AnyObject) {
+        self.view.isUserInteractionEnabled = false
         if keyPairExists { // delete current key pair
             AsymmetricCryptoManager.sharedInstance.deleteSecureKeyPair({ (success) -> Void in
                 if success {
                     self.showAlertWithFadingOutMessage("Keypair successfully deleted")
                     self.keyPairExists = false
                 } else { self.showAlertWithFadingOutMessage("Error deleting keypair.") }
-                self.view.userInteractionEnabled = true
+                self.view.isUserInteractionEnabled = true
             })
         } else { // generate keypair
             AsymmetricCryptoManager.sharedInstance.createSecureKeyPair({ (success, error) -> Void in
@@ -69,63 +69,63 @@ class ViewController: UIViewController {
                     self.showAlertWithFadingOutMessage("RSA-2048 keypair successfully generated.")
                     self.keyPairExists = true
                 } else { self.showAlertWithFadingOutMessage("An error happened while generating a keypair: \(error)") }
-                self.view.userInteractionEnabled = true
+                self.view.isUserInteractionEnabled = true
             })
         }
     }
     
-    @IBAction func cypherText(sender: AnyObject) {
+    @IBAction func cypherText(_ sender: AnyObject) {
         // safety check.
         if clearTextTextfield.text!.isEmpty {
             self.showAlertWithFadingOutMessage("Please, insert a clear text in the upper textfield.")
             return
         }
-        self.view.userInteractionEnabled = false
+        self.view.isUserInteractionEnabled = false
         self.cypheredTextTextfield.text = ""
         self.view.endEditing(true)
         AsymmetricCryptoManager.sharedInstance.encryptMessageWithPublicKey(clearTextTextfield.text!) { (success, data, error) -> Void in
             if success {
-                let b64encoded = data!.base64EncodedStringWithOptions([])
+                let b64encoded = data!.base64EncodedString(options: [])
                 self.cypheredTextTextfield.text = b64encoded
                 self.clearTextTextfield.text = ""
             } else {
                 self.showAlertWithFadingOutMessage("Error cyphering data: \(error)")
             }
-            self.view.userInteractionEnabled = true
+            self.view.isUserInteractionEnabled = true
         }
     }
     
-    @IBAction func signText(sender: AnyObject) {
+    @IBAction func signText(_ sender: AnyObject) {
         // safety check.
         if clearTextTextfield.text!.isEmpty {
             self.showAlertWithFadingOutMessage("Please, insert the text to be signed in the upper textfield.")
             return
         }
-        self.view.userInteractionEnabled = false
+        self.view.isUserInteractionEnabled = false
         self.cypheredTextTextfield.text = ""
         self.view.endEditing(true)
         AsymmetricCryptoManager.sharedInstance.signMessageWithPrivateKey(clearTextTextfield.text!) { (success, data, error) -> Void in
             if success {
-                let b64encoded = data!.base64EncodedStringWithOptions([])
+                let b64encoded = data!.base64EncodedString(options: [])
                 self.cypheredTextTextfield.text = b64encoded
             } else {
                 self.showAlertWithFadingOutMessage("Error signing message: \(error)")
             }
-            self.view.userInteractionEnabled = true
+            self.view.isUserInteractionEnabled = true
         }
     }
     
-    @IBAction func decypherText(sender: AnyObject) {
+    @IBAction func decypherText(_ sender: AnyObject) {
         // safety check.
         if cypheredTextTextfield.text!.isEmpty {
             self.showAlertWithFadingOutMessage("Please, insert a cyphered, base64 encoded text in the lower textfield.")
             return
         }
-        guard let encryptedData = NSData(base64EncodedString: cypheredTextTextfield.text!, options: []) else {
+        guard let encryptedData = Data(base64Encoded: cypheredTextTextfield.text!, options: []) else {
             self.showAlertWithFadingOutMessage("Unable to base64 decode the input string.")
             return
         }
-        self.view.userInteractionEnabled = false
+        self.view.isUserInteractionEnabled = false
         self.clearTextTextfield.text = ""
         self.view.endEditing(true)
         AsymmetricCryptoManager.sharedInstance.decryptMessageWithPrivateKey(encryptedData) { (success, result, error) -> Void in
@@ -135,11 +135,11 @@ class ViewController: UIViewController {
             } else {
                 self.showAlertWithFadingOutMessage("Error decoding base64 string: \(error)")
             }
-            self.view.userInteractionEnabled = true
+            self.view.isUserInteractionEnabled = true
         }
     }
     
-    @IBAction func verifySignature(sender: AnyObject) {
+    @IBAction func verifySignature(_ sender: AnyObject) {
         // safety checks.
         if clearTextTextfield.text!.isEmpty {
             self.showAlertWithFadingOutMessage("Please, insert a the text that was signed in the upper textfield.")
@@ -150,15 +150,15 @@ class ViewController: UIViewController {
             return
         }
         
-        guard let rawData = clearTextTextfield.text?.dataUsingEncoding(NSUTF8StringEncoding), let signatureData = NSData(base64EncodedString: cypheredTextTextfield.text!, options: []) else {
+        guard let rawData = clearTextTextfield.text?.data(using: String.Encoding.utf8), let signatureData = Data(base64Encoded: cypheredTextTextfield.text!, options: []) else {
             self.showAlertWithFadingOutMessage("Unable to decode or identify input data. Probably one of the input fields is corrupted.")
             return
         }
-        self.view.userInteractionEnabled = false
+        self.view.isUserInteractionEnabled = false
         self.view.endEditing(true)
         AsymmetricCryptoManager.sharedInstance.verifySignaturePublicKey(rawData, signatureData: signatureData) { (success, error) -> Void in
             self.showAlertWithFadingOutMessage(success ? "Signature verification was successful." : "Error: the signature is not valid for the input text")
-            self.view.userInteractionEnabled = true
+            self.view.isUserInteractionEnabled = true
         }
     }
 }

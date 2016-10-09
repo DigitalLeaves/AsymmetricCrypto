@@ -18,20 +18,20 @@ private let kAsymmetricCryptoManagerKeySize = 2048
 private let kAsymmetricCryptoManagerCypheredBufferSize = 1024
 private let kAsymmetricCryptoManagerSecPadding: SecPadding = .PKCS1
 
-enum AsymmetricCryptoException: ErrorType {
-    case UnknownError
-    case DuplicateFoundWhileTryingToCreateKey
-    case KeyNotFound
-    case AuthFailed
-    case UnableToAddPublicKeyToKeyChain
-    case WrongInputDataFormat
-    case UnableToEncrypt
-    case UnableToDecrypt
-    case UnableToSignData
-    case UnableToVerifySignedData
-    case UnableToPerformHashOfData
-    case UnableToGenerateAccessControlWithGivenSecurity
-    case OutOfMemory
+enum AsymmetricCryptoException: Error {
+    case unknownError
+    case duplicateFoundWhileTryingToCreateKey
+    case keyNotFound
+    case authFailed
+    case unableToAddPublicKeyToKeyChain
+    case wrongInputDataFormat
+    case unableToEncrypt
+    case unableToDecrypt
+    case unableToSignData
+    case unableToVerifySignedData
+    case unableToPerformHashOfData
+    case unableToGenerateAccessControlWithGivenSecurity
+    case outOfMemory
 }
 
 class AsymmetricCryptoManager: NSObject {
@@ -43,243 +43,238 @@ class AsymmetricCryptoManager: NSObject {
     
     // MARK: - Manage keys
     
-    func createSecureKeyPair(completion: ((success: Bool, error: AsymmetricCryptoException?) -> Void)? = nil) {
+    func createSecureKeyPair(_ completion: ((_ success: Bool, _ error: AsymmetricCryptoException?) -> Void)? = nil) {
         // private key parameters
         let privateKeyParams: [String: AnyObject] = [
-            kSecAttrIsPermanent as String: true,
-            kSecAttrApplicationTag as String: kAsymmetricCryptoManagerApplicationTag
+            kSecAttrIsPermanent as String: true as AnyObject,
+            kSecAttrApplicationTag as String: kAsymmetricCryptoManagerApplicationTag as AnyObject
         ]
         
         // private key parameters
         let publicKeyParams: [String: AnyObject] = [
-            kSecAttrIsPermanent as String: true,
-            kSecAttrApplicationTag as String: kAsymmetricCryptoManagerApplicationTag
+            kSecAttrIsPermanent as String: true as AnyObject,
+            kSecAttrApplicationTag as String: kAsymmetricCryptoManagerApplicationTag as AnyObject
         ]
         
         // global parameters for our key generation
         let parameters: [String: AnyObject] = [
             kSecAttrKeyType as String:          kAsymmetricCryptoManagerKeyType,
-            kSecAttrKeySizeInBits as String:    kAsymmetricCryptoManagerKeySize,
-            kSecPublicKeyAttrs as String:       publicKeyParams,
-            kSecPrivateKeyAttrs as String:      privateKeyParams,
+            kSecAttrKeySizeInBits as String:    kAsymmetricCryptoManagerKeySize as AnyObject,
+            kSecPublicKeyAttrs as String:       publicKeyParams as AnyObject,
+            kSecPrivateKeyAttrs as String:      privateKeyParams as AnyObject,
         ]
         
         // asynchronously generate the key pair and call the completion block
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
-            var pubKey, privKey: SecKeyRef?
-            let status = SecKeyGeneratePair(parameters, &pubKey, &privKey)
+        DispatchQueue.global(qos: DispatchQoS.QoSClass.default).async { () -> Void in
+            var pubKey, privKey: SecKey?
+            let status = SecKeyGeneratePair(parameters as CFDictionary, &pubKey, &privKey)
             
             if status == errSecSuccess {
-                dispatch_async(dispatch_get_main_queue(), { completion?(success: true, error: nil) })
+                DispatchQueue.main.async(execute: { completion?(true, nil) })
             } else {
-                var error = AsymmetricCryptoException.UnknownError
+                var error = AsymmetricCryptoException.unknownError
                 switch (status) {
-                case errSecDuplicateItem: error = .DuplicateFoundWhileTryingToCreateKey
-                case errSecItemNotFound: error = .KeyNotFound
-                case errSecAuthFailed: error = .AuthFailed
+                case errSecDuplicateItem: error = .duplicateFoundWhileTryingToCreateKey
+                case errSecItemNotFound: error = .keyNotFound
+                case errSecAuthFailed: error = .authFailed
                 default: break
                 }
-                dispatch_async(dispatch_get_main_queue(), { completion?(success: false, error: error) })
+                DispatchQueue.main.async(execute: { completion?(false, error) })
             }
         }
     }
     
-    private func getPublicKeyData() -> NSData? {
+    fileprivate func getPublicKeyData() -> Data? {
         let parameters = [
             kSecClass as String: kSecClassKey,
             kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
             kSecAttrApplicationTag as String: kAsymmetricCryptoManagerApplicationTag,
             kSecAttrKeyClass as String: kSecAttrKeyClassPublic,
             kSecReturnData as String: true
-        ]
+        ] as [String : Any]
         var data: AnyObject?
-        let status = SecItemCopyMatching(parameters, &data)
+        let status = SecItemCopyMatching(parameters as CFDictionary, &data)
         if status == errSecSuccess {
-            return data as? NSData
+            return data as? Data
         } else { return nil }
     }
     
-    private func getPublicKeyReference() -> SecKeyRef? {
+    fileprivate func getPublicKeyReference() -> SecKey? {
         let parameters = [
             kSecClass as String: kSecClassKey,
             kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
             kSecAttrApplicationTag as String: kAsymmetricCryptoManagerApplicationTag,
             kSecAttrKeyClass as String: kSecAttrKeyClassPublic,
             kSecReturnRef as String: true,
-        ]
+        ] as [String : Any]
         var ref: AnyObject?
-        let status = SecItemCopyMatching(parameters, &ref)
-        if status == errSecSuccess { return ref as! SecKeyRef? } else { return nil }
+        let status = SecItemCopyMatching(parameters as CFDictionary, &ref)
+        if status == errSecSuccess { return ref as! SecKey? } else { return nil }
     }
     
-    private func getPrivateKeyReference() -> SecKeyRef? {
+    fileprivate func getPrivateKeyReference() -> SecKey? {
         let parameters = [
             kSecClass as String: kSecClassKey,
             kSecAttrKeyClass as String: kSecAttrKeyClassPrivate,
             kSecAttrApplicationTag as String: kAsymmetricCryptoManagerApplicationTag,
             kSecReturnRef as String: true,
-        ]
+        ] as [String : Any]
         var ref: AnyObject?
-        let status = SecItemCopyMatching(parameters, &ref)
-        if status == errSecSuccess { return ref as! SecKeyRef? } else { return nil }
+        let status = SecItemCopyMatching(parameters as CFDictionary, &ref)
+        if status == errSecSuccess { return ref as! SecKey? } else { return nil }
     }
     
     func keyPairExists() -> Bool {
         return self.getPublicKeyData() != nil
     }
     
-    func deleteSecureKeyPair(completion: ((success: Bool) -> Void)?) {
+    func deleteSecureKeyPair(_ completion: ((_ success: Bool) -> Void)?) {
         // private query dictionary
         let deleteQuery = [
             kSecClass as String: kSecClassKey,
             kSecAttrApplicationTag as String: kAsymmetricCryptoManagerApplicationTag,
-        ]
+        ] as [String : Any]
 
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
-            let status = SecItemDelete(deleteQuery) // delete private key
-            dispatch_async(dispatch_get_main_queue(), { completion?(success: status == errSecSuccess) })        }
+        DispatchQueue.global(qos: DispatchQoS.QoSClass.default).async { () -> Void in
+            let status = SecItemDelete(deleteQuery as CFDictionary) // delete private key
+            DispatchQueue.main.async(execute: { completion?(status == errSecSuccess) })        }
     }
     
     // MARK: - Cypher and decypher methods
     
-    func encryptMessageWithPublicKey(message: String, completion: (success: Bool, data: NSData?, error: AsymmetricCryptoException?) -> Void) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
+    func encryptMessageWithPublicKey(_ message: String, completion: @escaping (_ success: Bool, _ data: Data?, _ error: AsymmetricCryptoException?) -> Void) {
+        DispatchQueue.global(qos: DispatchQoS.QoSClass.default).async { () -> Void in
             
             if let publicKeyRef = self.getPublicKeyReference() {
                 // prepare input input plain text
-                guard let messageData = message.dataUsingEncoding(NSUTF8StringEncoding) else {
-                    completion(success: false, data: nil, error: .WrongInputDataFormat)
+                guard let messageData = message.data(using: String.Encoding.utf8) else {
+                    completion(false, nil, .wrongInputDataFormat)
                     return
                 }
-                let plainText = UnsafePointer<UInt8>(messageData.bytes)
-                let plainTextLen = messageData.length
+                let plainText = (messageData as NSData).bytes.bindMemory(to: UInt8.self, capacity: messageData.count)
+                let plainTextLen = messageData.count
                 
                 // prepare output data buffer
-                guard let cipherData = NSMutableData(length: SecKeyGetBlockSize(publicKeyRef)) else {
-                    completion(success: false, data: nil, error: .OutOfMemory)
-                    return
-                }
-                let cipherText = UnsafeMutablePointer<UInt8>(cipherData.mutableBytes)
-                var cipherTextLen = cipherData.length
+                var cipherData = Data(count: SecKeyGetBlockSize(publicKeyRef))
+                let cipherText = cipherData.withUnsafeMutableBytes({ (bytes: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
+                    return bytes
+                })
+                var cipherTextLen = cipherData.count
                 
                 let status = SecKeyEncrypt(publicKeyRef, .PKCS1, plainText, plainTextLen, cipherText, &cipherTextLen)
                 
                 // analyze results and call the completion in main thread
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                    completion(success: status == errSecSuccess, data: cipherData, error: status == errSecSuccess ? nil : .UnableToEncrypt)
-                    cipherText.destroy()
+                DispatchQueue.main.async(execute: { () -> Void in
+                    completion(status == errSecSuccess, cipherData, status == errSecSuccess ? nil : .unableToEncrypt)
+                    cipherText.deinitialize()
                 })
                 return
-            } else { dispatch_async(dispatch_get_main_queue(), { completion(success: false, data: nil, error: .KeyNotFound) }) }
+            } else { DispatchQueue.main.async(execute: { completion(false, nil, .keyNotFound) }) }
         }
     }
     
-    func decryptMessageWithPrivateKey(encryptedData: NSData, completion: (success: Bool, result: String?, error: AsymmetricCryptoException?) -> Void) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
+    func decryptMessageWithPrivateKey(_ encryptedData: Data, completion: @escaping (_ success: Bool, _ result: String?, _ error: AsymmetricCryptoException?) -> Void) {
+        DispatchQueue.global(qos: DispatchQoS.QoSClass.default).async { () -> Void in
             
             if let privateKeyRef = self.getPrivateKeyReference() {
                 // prepare input input plain text
-                let encryptedText = UnsafePointer<UInt8>(encryptedData.bytes)
-                let encryptedTextLen = encryptedData.length
+                let encryptedText = (encryptedData as NSData).bytes.bindMemory(to: UInt8.self, capacity: encryptedData.count)
+                let encryptedTextLen = encryptedData.count
                 
                 // prepare output data buffer
-                guard let plainData = NSMutableData(length: kAsymmetricCryptoManagerCypheredBufferSize) else {
-                    completion(success: false, result: nil, error: .OutOfMemory)
-                    return
-                }
-                let plainText = UnsafeMutablePointer<UInt8>(plainData.mutableBytes)
-                var plainTextLen = plainData.length
+                var plainData = Data(count: kAsymmetricCryptoManagerCypheredBufferSize)
+                let plainText = plainData.withUnsafeMutableBytes({ (bytes: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
+                    return bytes
+                })
+                var plainTextLen = plainData.count
                 
                 let status = SecKeyDecrypt(privateKeyRef, .PKCS1, encryptedText, encryptedTextLen, plainText, &plainTextLen)
 
                 // analyze results and call the completion in main thread
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                DispatchQueue.main.async(execute: { () -> Void in
                     if status == errSecSuccess {
                         // adjust NSData length
-                        plainData.length = plainTextLen
+                        plainData.count = plainTextLen
                         // Generate and return result string
-                        if let string = NSString(data: plainData, encoding: NSUTF8StringEncoding) as? String {
-                            completion(success: true, result: string, error: nil)
-                        } else { completion(success: false, result: nil, error: .UnableToDecrypt) }
-                    } else { completion(success: false, result: nil, error: .UnableToDecrypt) }
-                    plainText.destroy()
+                        if let string = NSString(data: plainData as Data, encoding: String.Encoding.utf8.rawValue) as? String {
+                            completion(true, string, nil)
+                        } else { completion(false, nil, .unableToDecrypt) }
+                    } else { completion(false, nil, .unableToDecrypt) }
+                    plainText.deinitialize()
                 })
                 return
-            } else { dispatch_async(dispatch_get_main_queue(), { completion(success: false, result: nil, error: .KeyNotFound) }) }
+            } else { DispatchQueue.main.async(execute: { completion(false, nil, .keyNotFound) }) }
         }
     }
     
     // MARK: - Sign and verify signature.
     
-    func signMessageWithPrivateKey(message: String, completion: (success: Bool, data: NSData?, error: AsymmetricCryptoException?) -> Void) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
+    func signMessageWithPrivateKey(_ message: String, completion: @escaping (_ success: Bool, _ data: Data?, _ error: AsymmetricCryptoException?) -> Void) {
+        DispatchQueue.global(qos: DispatchQoS.QoSClass.default).async { () -> Void in
             var error: AsymmetricCryptoException? = nil
             
             if let privateKeyRef = self.getPrivateKeyReference() {
                 // result data
-                guard let resultData = NSMutableData(length: SecKeyGetBlockSize(privateKeyRef)) else {
-                    dispatch_async(dispatch_get_main_queue(), { completion(success: false, data: nil, error: .OutOfMemory) })
-                    return
-                }
-                let resultPointer    = UnsafeMutablePointer<UInt8>(resultData.mutableBytes)
-                var resultLength     = resultData.length
+                var resultData = Data(count: SecKeyGetBlockSize(privateKeyRef))
+                let resultPointer = resultData.withUnsafeMutableBytes({ (bytes: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
+                    return bytes
+                })
+                var resultLength = resultData.count
                 
-                if let plainData = message.dataUsingEncoding(NSUTF8StringEncoding) {
+                if let plainData = message.data(using: String.Encoding.utf8) {
                     // generate hash of the plain data to sign
-                    guard let hashData = NSMutableData(length: Int(CC_SHA1_DIGEST_LENGTH)) else {
-                        dispatch_async(dispatch_get_main_queue(), { completion(success: false, data: nil, error: .OutOfMemory) })
-                        return
-                    }
-                    let hash = UnsafeMutablePointer<UInt8>(hashData.mutableBytes)
-                    CC_SHA1(UnsafePointer<Void>(plainData.bytes), CC_LONG(plainData.length), hash)
+                    var hashData = Data(count: Int(CC_SHA1_DIGEST_LENGTH))
+                    let hash = hashData.withUnsafeMutableBytes({ (bytes: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
+                        return bytes
+                    })
+                    CC_SHA1((plainData as NSData).bytes.bindMemory(to: Void.self, capacity: plainData.count), CC_LONG(plainData.count), hash)
                     
                     // sign the hash
-                    let status = SecKeyRawSign(privateKeyRef, SecPadding.PKCS1SHA1, hash, hashData.length, resultPointer, &resultLength)
-                    if status != errSecSuccess { error = .UnableToEncrypt }
-                    else { resultData.length = resultLength }
-                    hash.destroy()
-                } else { error = .WrongInputDataFormat }
+                    let status = SecKeyRawSign(privateKeyRef, SecPadding.PKCS1SHA1, hash, hashData.count, resultPointer, &resultLength)
+                    if status != errSecSuccess { error = .unableToEncrypt }
+                    else { resultData.count = resultLength }
+                    hash.deinitialize()
+                } else { error = .wrongInputDataFormat }
                 
                 // analyze results and call the completion in main thread
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                DispatchQueue.main.async(execute: { () -> Void in
                     if error == nil {
                         // adjust NSData length and return result.
-                        resultData.length = resultLength
-                        completion(success: true, data: resultData, error: nil)
-                    } else { completion(success: false, data: nil, error: error) }
+                        resultData.count = resultLength
+                        completion(true, resultData as Data, nil)
+                    } else { completion(false, nil, error) }
                     //resultPointer.destroy()
                 })
-            } else { dispatch_async(dispatch_get_main_queue(), { completion(success: false, data: nil, error: .KeyNotFound) }) }
+            } else { DispatchQueue.main.async(execute: { completion(false, nil, .keyNotFound) }) }
         }
     }
     
-    func verifySignaturePublicKey(data: NSData, signatureData: NSData, completion: (success: Bool, error: AsymmetricCryptoException?) -> Void) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
+    func verifySignaturePublicKey(_ data: Data, signatureData: Data, completion: @escaping (_ success: Bool, _ error: AsymmetricCryptoException?) -> Void) {
+        DispatchQueue.global(qos: DispatchQoS.QoSClass.default).async { () -> Void in
             var error: AsymmetricCryptoException? = nil
 
             if let publicKeyRef = self.getPublicKeyReference() {
                 // hash data
-                guard let hashData = NSMutableData(length: Int(CC_SHA1_DIGEST_LENGTH)) else {
-                    dispatch_async(dispatch_get_main_queue(), { completion(success: false, error: .OutOfMemory) })
-                    return
-                }
-                let hash = UnsafeMutablePointer<UInt8>(hashData.mutableBytes)
-                CC_SHA1(UnsafePointer<Void>(data.bytes), CC_LONG(data.length), hash)
+                var hashData = Data(count: Int(CC_SHA1_DIGEST_LENGTH))
+                let hash = hashData.withUnsafeMutableBytes({ (bytes: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
+                    return bytes
+                })
+                CC_SHA1((data as NSData).bytes.bindMemory(to: Void.self, capacity: data.count), CC_LONG(data.count), hash)
                 // input and output data
-                let signaturePointer = UnsafePointer<UInt8>(signatureData.bytes)
-                let signatureLength = signatureData.length
+                let signaturePointer = (signatureData as NSData).bytes.bindMemory(to: UInt8.self, capacity: signatureData.count)
+                let signatureLength = signatureData.count
                 
                 let status = SecKeyRawVerify(publicKeyRef, SecPadding.PKCS1SHA1, hash, Int(CC_SHA1_DIGEST_LENGTH), signaturePointer, signatureLength)
                 
-                if status != errSecSuccess { error = .UnableToDecrypt }
+                if status != errSecSuccess { error = .unableToDecrypt }
                 
                 // analyze results and call the completion in main thread
-                hash.destroy()
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                    completion(success: status == errSecSuccess, error: error)
+                hash.deinitialize()
+                DispatchQueue.main.async(execute: { () -> Void in
+                    completion(status == errSecSuccess, error)
                 })
                 return
-            } else { dispatch_async(dispatch_get_main_queue(), { completion(success: false, error: .KeyNotFound) }) }
+            } else { DispatchQueue.main.async(execute: { completion(false, .keyNotFound) }) }
         }
     }
     

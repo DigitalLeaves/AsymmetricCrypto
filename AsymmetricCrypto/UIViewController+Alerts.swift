@@ -10,31 +10,31 @@ import UIKit
 var asymmetricCryptoAlert: UIAlertController?
 
 extension UIViewController {
-    func showAlertWithMessage(msg: String, completion: (() -> Void)? = nil) {
-        let alert = UIAlertController(title: nil, message: msg, preferredStyle: .Alert)
-        alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+    func showAlertWithMessage(_ msg: String, completion: (() -> Void)? = nil) {
+        let alert = UIAlertController(title: nil, message: msg, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
         asymmetricCryptoAlert = alert
-        self.presentViewController(alert, animated: true, completion: completion)
+        self.present(alert, animated: true, completion: completion)
     }
     
-    func showAlertWithFadingOutMessage(msg: String, completion: (() -> Void)? = nil) {
-        asymmetricCryptoAlert = UIAlertController(title: nil, message: msg, preferredStyle: .Alert)
-        self.presentViewController(asymmetricCryptoAlert!, animated: true, completion: completion)
-        NSTimer.scheduledTimerWithTimeInterval(3.0, target: self, selector: "dismissLoadingMessageAlert", userInfo: nil, repeats: false)
+    func showAlertWithFadingOutMessage(_ msg: String, completion: (() -> Void)? = nil) {
+        asymmetricCryptoAlert = UIAlertController(title: nil, message: msg, preferredStyle: .alert)
+        self.present(asymmetricCryptoAlert!, animated: true, completion: completion)
+        Timer.scheduledTimer(timeInterval: 3.0, target: self, selector: #selector(UIViewController.dismissLoadingMessageAlert), userInfo: nil, repeats: false)
     }
     
-    func showLoadingAlertMessage(completion: (() -> Void)?) {
+    func showLoadingAlertMessage(_ completion: (() -> Void)?) {
         let finalMessage = "Loading...\n\n\n"
-        asymmetricCryptoAlert = UIAlertController(title: finalMessage, message: nil, preferredStyle: .Alert)
-        let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .WhiteLarge)
-        activityIndicator.color = UIColor.blackColor()
-        activityIndicator.center = CGPointMake(130.5, 85.5)
+        asymmetricCryptoAlert = UIAlertController(title: finalMessage, message: nil, preferredStyle: .alert)
+        let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
+        activityIndicator.color = UIColor.black
+        activityIndicator.center = CGPoint(x: 130.5, y: 85.5)
         asymmetricCryptoAlert!.view.addSubview(activityIndicator)
         activityIndicator.startAnimating()
         
-        self.presentViewController(asymmetricCryptoAlert!, animated: true) { () -> Void in
+        self.present(asymmetricCryptoAlert!, animated: true) { () -> Void in
             if completion != nil {
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(0.0 * Double(NSEC_PER_SEC))), dispatch_get_main_queue(), { () -> Void in
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(0.0 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: { () -> Void in
                     completion!()
                 })
             }
@@ -45,10 +45,10 @@ extension UIViewController {
         self.dismissMessageAlert(nil)
     }
     
-    func dismissMessageAlert(completion: (() -> Void)? = nil) {
-        self.dismissViewControllerAnimated(true, completion: { () -> Void in
-            completion?()
+    func dismissMessageAlert(_ completion: (() -> Void)? = nil) {
+        self.dismiss(animated: true, completion: { () -> Void in
             asymmetricCryptoAlert = nil
+            completion?()
         })
     }
 }
