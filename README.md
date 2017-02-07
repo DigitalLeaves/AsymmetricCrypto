@@ -1,7 +1,7 @@
 # AsymmetricCryptoManager
 AsymmetricCryptoManager is a Swift implementation of an asymmetric cryptography manager to facilitate the use of asymmetric cryptographic operations in Swift. Included is a sample view controller for testing purposes.
 
-![](http://digitalleaves.com/blog/wp-content/uploads/2015/10/ezgif.com-optimize.gif)
+![](http://digitalleaves.com/wp-content/uploads/2015/10/ezgif.com-optimize.gif)
 
 ## Usage
 
